@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>Kiosk — Landscape</title>
+
+<!--
+═══════════════════════════════════════════════════════════════════════
+  LANDSCAPE TOUCH KIOSK  ·  v3
+
+  Home  →  Website · Gallery · Reviews · Instagram · Register
+  Persistent bottom bar on every sub-screen, so visitors can move
+  between sections without going back to Home first.
+  Returns Home automatically after idle.
+
+  Everything editable is in the CONFIG block near the bottom.
+
+  MEDIA: put your video, images and QR code in the same folder as
+  this file and name them in CONFIG. Nothing is embedded, so the
+  file stays small and the browser caches media between loads.
+
+  ⚠ REVIEWS: the ones below are placeholders. Replace with real,
+    permissioned customer quotes before this goes in front of the
+    public — invented testimonials are deceptive advertising.
+═══════════════════════════════════════════════════════════════════════
+-->
+
+<style>
+[data-theme="teal"]{
+  --ink:#0b2b33; --ink-2:#06222a; --ink-3:#0e353f;
+  --accent:#00d1d2; --accent-deep:#067a86; --accent-dark:#0a4a52;
+  --paper:#f4efe6; --warm:#d9a13b; --fresh:#cfd94b; --on-accent:#04252b;
+}
+[data-theme="crimson"]{
+  --ink:#2a0d14; --ink-2:#1e0910; --ink-3:#38131d;
+  --accent:#ff5a6e; --accent-deep:#a3213a; --accent-dark:#6d1526;
+  --paper:#f6ece9; --warm:#e0a04a; --fresh:#e8c07a; --on-accent:#2a0d14;
+}
+[data-theme="violet"]{
+  --ink:#150a2e; --ink-2:#0e0620; --ink-3:#1f1040;
+  --accent:#a98bff; --accent-deep:#5b3fa8; --accent-dark:#3a2470;
+  --paper:#efeaf8; --warm:#d9a13b; --fresh:#7fd4e8; --on-accent:#14082c;
+}
+[data-theme="amber"]{
+  --ink:#241606; --ink-2:#1a0f03; --ink-3:#31200b;
+  --accent:#ffb648; --accent-deep:#b3762a; --accent-dark:#7a4d16;
+  --paper:#f7efe2; --warm:#e0704a; --fresh:#d6cf8a; --on-accent:#241606;
+}
+[data-theme="forest"]{
+  --ink:#0a2018; --ink-2:#061711; --ink-3:#102c21;
+  --accent:#5fd39b; --accent-deep:#2a8560; --accent-dark:#17573c;
+  --paper:#e9f2ec; --warm:#d9a13b; --fresh:#bcd96b; --on-accent:#062018;
+}
+[data-theme="graphite"]{
+  --ink:#141518; --ink-2:#0d0e10; --ink-3:#1d1f23;
+  --accent:#9aa4b2; --accent-deep:#4d5561; --accent-dark:#33383f;
+  --paper:#eceef1; --warm:#c9a06a; --fresh:#8fb0c9; --on-accent:#141518;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{
+  width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);
+  font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;overscroll-behavior:none;
+}
+#app{position:relative;width:100%;height:100%}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--ink)}
+.screen.active{display:flex}
+
+/* ══ HOME ══ */
+#home{flex-direction:row}
+.hero{position:relative;flex:0 0 46%;height:100%;overflow:hidden;background:#000}
+.hero video,.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}
+.hero.blank{background:
+  radial-gradient(110% 80% at 72% 14%, var(--accent-deep) 0%, transparent 58%),
+  linear-gradient(160deg, var(--ink) 0%, var(--accent-dark) 100%)}
+.veil{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 38%,rgba(0,0,0,.72) 100%)}
+.brand{position:absolute;top:6%;left:0;right:0;text-align:center;letter-spacing:.5em;
+  font-size:clamp(22px,2.8vw,36px);font-weight:700;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.6)}
+.tagline{position:absolute;top:calc(6% + 50px);left:0;right:0;text-align:center;
+  font-size:clamp(11px,1.35vw,17px);letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+
+.hub{flex:1;display:flex;flex-direction:column;padding:3.2% 3%;gap:2vh}
+.hub h1{font-size:clamp(13px,1.6vw,20px);letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);font-weight:700;flex:0 0 auto}
+
+/* card grid — bigger targets, scannable at a glance */
+.cards{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:1.8vh 16px;align-content:stretch}
+.card{
+  position:relative;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;
+  padding:20px;border:0;border-radius:22px;cursor:pointer;font-family:inherit;text-align:left;
+  background:var(--ink-3);color:var(--paper);
+  box-shadow:0 10px 26px rgba(0,0,0,.4),inset 0 0 0 1px rgba(255,255,255,.07);
+  transition:transform .12s ease,filter .12s ease;overflow:hidden;
+}
+.card:active{transform:scale(.972);filter:brightness(1.18)}
+.card .ico{position:absolute;top:16px;left:20px;width:52px;height:52px;border-radius:15px;
+  display:grid;place-items:center;font-size:26px;background:rgba(255,255,255,.13)}
+.card .ttl{font-size:clamp(15px,1.75vw,22px);font-weight:700;line-height:1.15}
+.card .sub{font-size:clamp(11px,1.1vw,14px);opacity:.72;letter-spacing:.05em;line-height:1.35}
+.card.wide{grid-column:1/-1;flex-direction:row;align-items:center;gap:18px;justify-content:flex-start}
+.card.wide .ico{position:static;flex:0 0 52px}
+.card.a{background:linear-gradient(140deg,var(--accent-deep),var(--accent-dark))}
+.card.b{background:linear-gradient(140deg,var(--warm),rgba(0,0,0,.35))}
+.card.c{background:linear-gradient(140deg,var(--accent-dark),var(--ink-3))}
+
+/* ══ SUB SCREENS ══ */
+.topbar{flex:0 0 auto;display:flex;align-items:center;gap:16px;padding:15px 22px;
+  background:var(--ink-2);border-bottom:1px solid rgba(255,255,255,.08)}
+.back{border:0;border-radius:15px;padding:13px 22px;font-size:clamp(14px,1.5vw,19px);font-weight:700;
+  background:var(--accent);color:var(--on-accent);font-family:inherit;cursor:pointer}
+.back:active{filter:brightness(1.12)}
+.title{font-size:clamp(14px,1.6vw,21px);font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;position:relative}
+.body::-webkit-scrollbar{width:0}
+
+/* persistent bottom navigation */
+.tabbar{flex:0 0 auto;display:flex;gap:8px;padding:10px 14px;background:var(--ink-2);
+  border-top:1px solid rgba(255,255,255,.08)}
+.tabbar button{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:9px 4px;border:0;border-radius:13px;background:transparent;
+  color:rgba(255,255,255,.6);font-family:inherit;font-size:clamp(10px,1.05vw,13px);
+  font-weight:600;cursor:pointer;
+}
+.tabbar button .g{font-size:19px;line-height:1}
+.tabbar button.sel{background:rgba(255,255,255,.13);color:#fff}
+.tabbar button:active{filter:brightness(1.3)}
+
+#webFrame{width:100%;height:100%;border:0;background:#fff;display:block}
+.frame-note{position:absolute;bottom:0;left:0;right:0;padding:10px;text-align:center;
+  font-size:13px;background:rgba(0,0,0,.8);color:var(--paper)}
+
+/* ══ GALLERY ══ */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:16px}
+.cell{height:26vh;border-radius:18px;background:var(--ink-2);overflow:hidden;
+  box-shadow:0 8px 22px rgba(0,0,0,.38);display:grid;place-items:center;cursor:pointer}
+.cell img{width:100%;height:100%;object-fit:contain}
+.cell.empty{border:2px dashed rgba(255,255,255,.24);gap:5px;padding:14px;text-align:center}
+.cell.empty .lbl{font-size:10.5px;font-weight:700;letter-spacing:.14em;opacity:.5}
+.cell.empty .fn{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;opacity:.7}
+#lightbox{position:absolute;inset:0;display:none;place-items:center;background:rgba(0,0,0,.94);z-index:20;padding:28px}
+#lightbox.open{display:grid}
+#lightbox img{max-width:92%;max-height:92%;border-radius:18px}
+
+/* ══ REVIEWS ══ */
+.reviews{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:18px}
+.rev{padding:20px 22px;border-radius:20px;background:var(--ink-3);
+  box-shadow:0 8px 22px rgba(0,0,0,.34),inset 0 0 0 1px rgba(255,255,255,.06);
+  display:flex;flex-direction:column;gap:11px}
+.rev .stars{color:var(--warm);font-size:19px;letter-spacing:3px;line-height:1}
+.rev .quote{font-size:clamp(13px,1.45vw,17px);line-height:1.55;opacity:.92}
+.rev .who{display:flex;align-items:center;gap:11px;margin-top:auto}
+.rev .av{width:38px;height:38px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;
+  background:var(--accent-deep);font-weight:700;font-size:15px;color:#fff}
+.rev .nm{font-size:clamp(12px,1.25vw,15px);font-weight:700}
+.rev .mt{font-size:clamp(10.5px,1.05vw,13px);opacity:.6}
+.revnote{margin:0 18px 18px;padding:12px;border-radius:12px;text-align:center;font-size:12px;
+  background:rgba(255,255,255,.07);border:1px dashed rgba(255,255,255,.24);opacity:.75}
+
+/* ══ SOCIAL ══ */
+.social{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:20px;padding:5% 8%;text-align:center}
+.social .handle{font-size:clamp(22px,3.2vw,42px);font-weight:700;letter-spacing:.02em}
+.social .blurb{font-size:clamp(13px,1.5vw,18px);opacity:.7;max-width:34ch;line-height:1.5}
+.qrbox{width:clamp(150px,20vh,220px);height:clamp(150px,20vh,220px);border-radius:20px;
+  background:#fff;display:grid;place-items:center;overflow:hidden;padding:10px}
+.qrbox img{width:100%;height:100%;object-fit:contain}
+.qrbox.empty{background:transparent;border:2px dashed rgba(255,255,255,.3);gap:6px;
+  grid-auto-flow:row;align-content:center}
+.qrbox.empty .lbl{font-size:10.5px;font-weight:700;letter-spacing:.14em;opacity:.55}
+.qrbox.empty .fn{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;opacity:.7}
+.social .scan{font-size:clamp(12px,1.3vw,16px);letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+
+/* ══ FORM ══ */
+form{padding:20px 28px 24px;display:grid;grid-template-columns:1fr 1fr;gap:14px 22px;align-content:start}
+form .full{grid-column:1/-1}
+label{font-size:clamp(11.5px,1.25vw,15px);letter-spacing:.06em;opacity:.9}
+input,select,textarea{width:100%;margin-top:6px;padding:14px;font-size:clamp(14px,1.5vw,19px);
+  color:#101418;border:2px solid rgba(255,255,255,.15);border-radius:15px;background:#fff;font-family:inherit}
+textarea{min-height:80px;resize:none}
+.submit{border:0;border-radius:17px;padding:17px;font-size:clamp(16px,1.8vw,23px);font-weight:700;
+  background:var(--accent);color:var(--on-accent);font-family:inherit;cursor:pointer}
+.ok{margin:0 28px;padding:16px;border-radius:15px;display:none;background:rgba(255,255,255,.1);
+  border:1px solid var(--accent);font-size:clamp(13px,1.5vw,18px);text-align:center}
+.ok.show{display:block}
+
+.idle{position:absolute;top:10px;right:14px;font-size:11.5px;letter-spacing:.12em;opacity:.55;z-index:30}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms !important}}
+</style>
+</head>
+
+<body>
+<div id="app">
+  <div class="idle" id="idle"></div>
+
+  <section class="screen active" id="home">
+    <div class="hero" id="hero">
+      <video id="mainVideo" autoplay muted loop playsinline></video>
+      <div class="veil"></div>
+      <div class="brand" id="brandEl"></div>
+      <div class="tagline" id="taglineEl"></div>
+    </div>
+    <div class="hub">
+      <h1 id="menuHead"></h1>
+      <div class="cards" id="cards"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="web">
+    <div class="topbar"><button class="back" data-go="home">&#8592; Home</button><span class="title" id="webTitle"></span></div>
+    <div class="body"><iframe id="webFrame" title="Website"></iframe><div class="frame-note" id="frameNote"></div></div>
+    <div class="tabbar" data-tabs></div>
+  </section>
+
+  <section class="screen" id="gallery">
+    <div class="topbar"><button class="back" data-go="home">&#8592; Home</button><span class="title" id="galTitle"></span></div>
+    <div class="body"><div class="grid" id="grid"></div></div>
+    <div id="lightbox"><img id="lightboxImg" alt="" /></div>
+    <div class="tabbar" data-tabs></div>
+  </section>
+
+  <section class="screen" id="reviews">
+    <div class="topbar"><button class="back" data-go="home">&#8592; Home</button><span class="title" id="revTitle"></span></div>
+    <div class="body"><div class="reviews" id="revList"></div><div class="revnote" id="revNote"></div></div>
+    <div class="tabbar" data-tabs></div>
+  </section>
+
+  <section class="screen" id="social">
+    <div class="topbar"><button class="back" data-go="home">&#8592; Home</button><span class="title" id="socTitle"></span></div>
+    <div class="body"><div class="social" id="socBody"></div></div>
+    <div class="tabbar" data-tabs></div>
+  </section>
+
+  <section class="screen" id="form">
+    <div class="topbar"><button class="back" data-go="home">&#8592; Home</button><span class="title" id="formTitle"></span></div>
+    <div class="body"><form id="leadForm"></form><div class="ok" id="ok"></div></div>
+    <div class="tabbar" data-tabs></div>
+  </section>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   ▼▼▼  CONFIG — edit this and nothing else  ▼▼▼
+   ═══════════════════════════════════════════════════════════════════ */
+
+const CONFIG = {
+
+  /* COLOURS: teal · crimson · violet · amber · forest · graphite */
+  theme: "violet",
+
+  /* HERO VIDEO — files sit beside this one.
+     Leave video:"" to show the poster; leave both "" for a colour panel. */
+  video:  "brand.mp4",
+  poster: "brand-poster.jpg",
+
+  brand:   "IQOS",
+  tagline: "This changes everything",
+  menuHeading: "What would you like to do?",
+
+  /* HOME CARDS — reorder or remove freely.
+     go: web | gallery | reviews | social | form
+     style: a | b | c        wide: true = full-width row            */
+  cards: [
+    { go:"gallery", style:"a", icon:"🖼", title:"Explore Products",  sub:"Devices, TEREA & accessories" },
+    { go:"reviews", style:"c", icon:"★",  title:"Customer Reviews",  sub:"What people are saying" },
+    { go:"social",  style:"b", icon:"◎",  title:"Follow on Instagram", sub:"Scan to follow" },
+    { go:"web",     style:"c", icon:"🌐", title:"Visit the Website", sub:"lb.iqos.com" },
+    { go:"form",    style:"a", icon:"✎",  title:"Register Your Interest", sub:"Takes about a minute", wide:true }
+  ],
+
+  /* BOTTOM BAR — shown on every sub-screen */
+  tabs: [
+    { go:"gallery", icon:"🖼", label:"Products" },
+    { go:"reviews", icon:"★",  label:"Reviews"  },
+    { go:"social",  icon:"◎",  label:"Instagram"},
+    { go:"web",     icon:"🌐", label:"Website"  },
+    { go:"form",    icon:"✎",  label:"Register" }
+  ],
+
+  /* WEBSITE */
+  webUrl:   "https://lb.iqos.com/en",
+  webTitle: "IQOS Lebanon",
+  frameNote:"If the site does not load here, browse the gallery or ask a member of staff.",
+
+  /* GALLERY — filenames beside this file, "" leaves an empty slot */
+  galleryTitle: "Products",
+  gallery: [ "", "", "", "", "", "" ],
+
+  /* REVIEWS ─────────────────────────────────────────────────────────
+     ⚠ PLACEHOLDERS. Replace with real, permissioned customer quotes.
+       Invented testimonials are deceptive advertising, and for a
+       tobacco brand they will also need client compliance approval.
+       Set  reviewsNote: ""  once real reviews are in.
+     ──────────────────────────────────────────────────────────────── */
+  reviewsTitle: "Customer Reviews",
+  reviewsNote:  "⚠ Placeholder reviews — replace with approved customer quotes before public use.",
+  reviews: [
+    { stars:5, quote:"[ Real customer quote goes here. Two lines reads best on a kiosk. ]", name:"[ Name ]", meta:"[ City ] · [ Date ]" },
+    { stars:5, quote:"[ Real customer quote goes here. ]", name:"[ Name ]", meta:"[ City ] · [ Date ]" },
+    { stars:4, quote:"[ Real customer quote goes here. ]", name:"[ Name ]", meta:"[ City ] · [ Date ]" },
+    { stars:5, quote:"[ Real customer quote goes here. ]", name:"[ Name ]", meta:"[ City ] · [ Date ]" }
+  ],
+
+  /* INSTAGRAM ───────────────────────────────────────────────────────
+     Generate a QR pointing at the profile, save it beside this file
+     and name it below. Confirm the official handle with the client.
+     ──────────────────────────────────────────────────────────────── */
+  socialTitle:  "Instagram",
+  socialHandle: "@iqos.lb",
+  socialUrl:    "https://www.instagram.com/iqos.lb/",
+  socialBlurb:  "[ Client-approved line inviting visitors to follow. ]",
+  socialQr:     "",            // e.g. "instagram-qr.png"
+  socialQrHint: "instagram-qr.png",
+  socialScan:   "Scan with your phone camera",
+
+  /* FORM */
+  formTitle: "Register Your Interest",
+  fields: [
+    { id:"fname",    label:"Full name",     type:"text",  required:true },
+    { id:"phone",    label:"Mobile number", type:"tel",   required:true },
+    { id:"email",    label:"Email",         type:"email" },
+    { id:"interest", label:"I am interested in", type:"select",
+      options:["ILUMA device","TEREA sticks","Accessories","Store locations"] },
+    { id:"notes",    label:"Notes", type:"textarea", full:true }
+  ],
+  submitLabel: "Submit",
+  thanks: "Thank you. Your details have been saved on this kiosk.",
+
+  idleSeconds: 45
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   ▲▲▲  END OF CONFIG  ▲▲▲
+   ═══════════════════════════════════════════════════════════════════ */
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+document.documentElement.setAttribute('data-theme', CONFIG.theme || 'teal');
+
+$('brandEl').textContent   = CONFIG.brand;
+$('taglineEl').textContent = CONFIG.tagline;
+$('menuHead').textContent  = CONFIG.menuHeading;
+$('webTitle').textContent  = CONFIG.webTitle;
+$('galTitle').textContent  = CONFIG.galleryTitle;
+$('revTitle').textContent  = CONFIG.reviewsTitle;
+$('socTitle').textContent  = CONFIG.socialTitle;
+$('formTitle').textContent = CONFIG.formTitle;
+$('frameNote').textContent = CONFIG.frameNote;
+$('ok').textContent        = CONFIG.thanks;
+
+/* ── home cards ── */
+$('cards').innerHTML = CONFIG.cards.map(c =>
+  '<button class="card '+(c.style||'')+(c.wide?' wide':'')+'" data-go="'+c.go+'">'
+  + '<span class="ico">'+c.icon+'</span>'
+  + '<span><span class="ttl">'+esc(c.title)+'</span>'
+  + (c.sub ? '<span class="sub">'+esc(c.sub)+'</span>' : '') + '</span></button>').join('');
+
+/* ── bottom bars ── */
+document.querySelectorAll('[data-tabs]').forEach(bar => {
+  bar.innerHTML = CONFIG.tabs.map(t =>
+    '<button data-go="'+t.go+'"><span class="g">'+t.icon+'</span>'+esc(t.label)+'</button>').join('');
+});
+
+/* ── hero video ── */
+const v = $('mainVideo'), hero = $('hero');
+function usePoster(){
+  if ($('posterImg')) return;
+  if (v && v.parentNode) v.remove();
+  if (CONFIG.poster){
+    const img = document.createElement('img');
+    img.id='posterImg'; img.src=CONFIG.poster; img.alt='';
+    img.addEventListener('error', ()=>{ img.remove(); hero.classList.add('blank'); });
+    hero.prepend(img);
+  } else hero.classList.add('blank');
+}
+if (CONFIG.video){
+  if (CONFIG.poster) v.setAttribute('poster', CONFIG.poster);
+  v.src = CONFIG.video;
+  v.addEventListener('error', usePoster);
+  setTimeout(()=>{ if (v && v.parentNode && v.readyState < 2) usePoster(); }, 6000);
+} else usePoster();
+function tryPlay(){ if (v && v.parentNode){ const p=v.play(); if(p&&p.catch) p.catch(()=>{}); } }
+tryPlay();
+['pointerdown','touchstart','keydown'].forEach(e=>
+  document.addEventListener(e, tryPlay, {passive:true, capture:true}));
+
+/* ── gallery ── */
+$('grid').innerHTML = CONFIG.gallery.map((src,i)=> src
+  ? '<div class="cell" data-src="'+esc(src)+'"><img src="'+esc(src)+'" alt=""></div>'
+  : '<div class="cell empty"><span class="lbl">ADD IMAGE</span><span class="fn">gallery'+(i+1)+'.jpg</span></div>').join('');
+$('grid').addEventListener('click', e=>{
+  const c = e.target.closest('.cell[data-src]'); if(!c) return;
+  $('lightboxImg').src = c.dataset.src; $('lightbox').classList.add('open');
+});
+$('lightbox').addEventListener('click', function(){ this.classList.remove('open'); });
+
+/* ── reviews ── */
+$('revList').innerHTML = CONFIG.reviews.map(r=>{
+  const n = Math.max(0, Math.min(5, r.stars||0));
+  const initial = (r.name||'?').replace(/[^A-Za-z\u0600-\u06FF]/g,'').charAt(0).toUpperCase() || '·';
+  return '<div class="rev">'
+    + '<div class="stars">'+'★'.repeat(n)+'☆'.repeat(5-n)+'</div>'
+    + '<div class="quote">'+esc(r.quote)+'</div>'
+    + '<div class="who"><span class="av">'+esc(initial)+'</span><span>'
+    + '<div class="nm">'+esc(r.name)+'</div><div class="mt">'+esc(r.meta||'')+'</div>'
+    + '</span></div></div>';
+}).join('');
+$('revNote').textContent = CONFIG.reviewsNote;
+if (!CONFIG.reviewsNote) $('revNote').style.display = 'none';
+
+/* ── instagram ── */
+$('socBody').innerHTML =
+  '<div class="handle">'+esc(CONFIG.socialHandle)+'</div>'
+  + '<div class="blurb">'+esc(CONFIG.socialBlurb)+'</div>'
+  + (CONFIG.socialQr
+      ? '<div class="qrbox"><img src="'+esc(CONFIG.socialQr)+'" alt=""></div>'
+      : '<div class="qrbox empty"><span class="lbl">ADD QR CODE</span><span class="fn">'
+        + esc(CONFIG.socialQrHint)+'</span></div>')
+  + '<div class="scan">'+esc(CONFIG.socialScan)+'</div>';
+
+/* ── form ── */
+$('leadForm').innerHTML = CONFIG.fields.map(f=>{
+  const req = f.required ? ' required' : '';
+  let ctrl;
+  if (f.type==='select')
+    ctrl = '<select id="'+f.id+'" name="'+f.id+'">'+f.options.map(o=>'<option>'+esc(o)+'</option>').join('')+'</select>';
+  else if (f.type==='textarea')
+    ctrl = '<textarea id="'+f.id+'" name="'+f.id+'"'+req+'></textarea>';
+  else
+    ctrl = '<input id="'+f.id+'" name="'+f.id+'" type="'+f.type+'"'+req+' />';
+  return '<div'+(f.full?' class="full"':'')+'><label for="'+f.id+'">'+esc(f.label)+'</label>'+ctrl+'</div>';
+}).join('') + '<button class="submit full" type="submit">'+esc(CONFIG.submitLabel)+'</button>';
+
+let leads = [];
+$('leadForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target).entries());
+  data.at = new Date().toISOString();
+  leads.push(data);
+  try{
+    const all = JSON.parse(localStorage.getItem('kiosk_leads')||'[]');
+    all.push(data); localStorage.setItem('kiosk_leads', JSON.stringify(all));
+  }catch(err){}
+  e.target.style.display='none';
+  $('ok').classList.add('show');
+  resetIdle();
+});
+
+/* Staff: triple-tap the form title to download leads as CSV. */
+let taps=0, tapTimer=null;
+$('formTitle').addEventListener('click', ()=>{
+  taps++; clearTimeout(tapTimer); tapTimer=setTimeout(()=>{taps=0;},900);
+  if (taps<3) return; taps=0;
+  let all = leads;
+  try{ all = JSON.parse(localStorage.getItem('kiosk_leads')||'[]'); }catch(err){}
+  if(!all.length) return;
+  const cols = Object.keys(all[0]);
+  const csv = [cols.join(',')].concat(all.map(r=>
+    cols.map(c=>'"'+String(r[c]??'').replace(/"/g,'""')+'"').join(','))).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='kiosk-leads.csv'; a.click();
+});
+
+/* ── navigation ── */
+let current='home';
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id===id));
+  $('webFrame').src = (id==='web') ? CONFIG.webUrl : 'about:blank';
+  if (id!=='gallery') $('lightbox').classList.remove('open');
+  document.querySelectorAll('.tabbar button').forEach(b=>
+    b.classList.toggle('sel', b.dataset.go===id));
+  if (id==='home'){
+    $('ok').classList.remove('show');
+    $('leadForm').reset(); $('leadForm').style.display='grid';
+    if (v && v.parentNode){ v.currentTime=0; tryPlay(); }
+  }
+  current=id; resetIdle();
+  const b=document.querySelector('#'+id+' .body'); if(b) b.scrollTop=0;
+}
+document.addEventListener('click', e=>{
+  const t=e.target.closest('[data-go]'); if(t) show(t.getAttribute('data-go'));
+});
+
+/* ── idle ── */
+let timer=null, deadline=0;
+function resetIdle(){
+  deadline = Date.now() + CONFIG.idleSeconds*1000;
+  clearTimeout(timer);
+  if (current==='home'){ $('idle').textContent=''; return; }
+  timer = setTimeout(()=>show('home'), CONFIG.idleSeconds*1000);
+}
+setInterval(()=>{
+  if (current==='home') return;
+  const left = Math.max(0, Math.ceil((deadline-Date.now())/1000));
+  $('idle').textContent = 'returning home in '+left+'s';
+}, 500);
+['pointerdown','touchstart','keydown','wheel','scroll'].forEach(e=>
+  document.addEventListener(e, resetIdle, {passive:true, capture:true}));
+
+/* ── screen + hygiene ── */
+let wakeLock=null;
+async function keepAwake(){
+  try{ if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){}
+}
+keepAwake();
+document.addEventListener('visibilitychange', ()=>{
+  if (document.visibilityState==='visible'){ keepAwake(); tryPlay(); }
+});
+document.addEventListener('contextmenu', e=>e.preventDefault());
+document.addEventListener('dragstart',   e=>e.preventDefault());
+
+resetIdle();
+</script>
+</body>
+</html>
